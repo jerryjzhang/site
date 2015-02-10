@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>2014 10 30 dse docker demo - CodingBird</title>
+  
+
+  
+  <link href='https://fonts.googleapis.com/css?family=Lato:400,700|Roboto+Slab:400,700|Inconsolata:400,700' rel='stylesheet' type='text/css'>
+
+  <link rel="stylesheet" href="../css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../css/theme_extra.css" type="text/css" />
+  <link rel="stylesheet" href="../css/highlight.css">
+
+  <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/modernizr/2.8.3/modernizr.min.js"></script>
+  <script type="text/javascript" src="../js/highlight.pack.js"></script>
+  <script src="../js/theme.js"></script>
+
+  <style>
+    body {font-size: 90%;}
+    pre, code {font-size: 100%;}
+    h3, h4, h5, h6 {color: #2980b9; font-weight: 300}
+  </style> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+      <div class="wy-side-nav-search">
+        <a href=".." class="icon icon-home"> CodingBird</a>
+        
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+      <ul class="current">
+    
+        
+            <li class="toctree-l1 current">
+                <a class="current" href=".">2014 10 30 dse docker demo</a>
+            </li>
+        
+
+    
+        
+            <li class="toctree-l1 ">
+                <a class="" href="../2014-11-01-kubernetes-dsf-demo">2014 11 01 kubernetes dsf demo</a>
+            </li>
+        
+
+    
+        
+            <li class="toctree-l1 ">
+                <a class="" href="../2014-11-05-Kubernetes-REST-API">2014 11 05 Kubernetes REST API</a>
+            </li>
+        
+
+    
+        
+            <li class="toctree-l1 ">
+                <a class="" href="../2014-11-12-Demystifying-Flynn">2014 11 12 Demystifying Flynn</a>
+            </li>
+        
+
+    
+        
+            <li class="toctree-l1 ">
+                <a class="" href="../2014-11-22-jflynn-tryout">2014 11 22 jflynn tryout</a>
+            </li>
+        
+
+    
+        
+            <li class="toctree-l1 ">
+                <a class="" href="../2015-01-05-Docker-Era-Is-Coming">2015 01 05 Docker Era Is Coming</a>
+            </li>
+        
+
+    
+        
+            <li class="toctree-l1 ">
+                <a class="" href="../2015-01-26-Lhotse-Dockerized">2015 01 26 Lhotse Dockerized</a>
+            </li>
+        
+
+    
+</ul>
+
+      </div>
+      &nbsp;
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="icon icon-reorder"></i>
+        <a href=".."></a>
+      </nav>
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="..">Docs</a> &raquo;</li>
+    <li>2014 10 30 dse docker demo</li>
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main">
+            <div class="section">
+              <hr />
+<p>layout: post
+title: DSE镜像制作
+published: true</p>
+<hr />
+<p><strong>Build image for DSE</strong></p>
+<p>Dockerfile</p>
+<pre><code>### tegdsf/centos在base centos镜像之上安装了jdk, maven及svn
+FROM tegdsf/centos
+### 通过svn获取服务引擎代码
+RUN svn checkout http://tc-svn.tencent.com/doss/doss_openapi_rep/openapi_proj/branches/commons/DSE/docker_1.0 /root/dse-docker
+### 通过maven编译打包
+RUN cd /root/dse-docker; mvn package
+### 将部署包拷贝到特定文件夹
+RUN rm /root/dse-docker/release/*.tar
+RUN mkdir /root/dse-latest
+RUN mv /root/dse-docker/release/dse-*/* /root/dse-latest/
+### 对启动/停止脚本设置可执行权限
+RUN chmod +x /root/dse-*/bin/start.sh
+RUN chmod +x /root/dse-*/bin/kill.sh
+RUN rm -r /root/dse-docker
+RUN rm -r /tmp/mavenRepository
+### 服务引擎默认监听19800端口
+EXPOSE 19800
+### start.sh是服务引擎的启动脚本
+ENTRYPOINT /root/dse-latest/bin/start.sh
+</code></pre>
+<p>Build command</p>
+<pre><code>docker build -t tegdsf/dse --no-cache-true .
+</code></pre>
+<p><strong>Build image for dse service</strong></p>
+<pre><code>FROM tegdsf/dse
+RUN svn checkout http://tc-svn.tencent.com/doss/doss_openapi_rep/openapi_proj/trunk/service/dse-service-demo /root/dse-service-demo
+RUN cd /root/dse-service-demo; mvn compile
+RUN mkdir /root/dse-latest/apps/demo
+RUN mv /root/dse-service-demo/WEB-INF /root/dse-latest/apps/demo
+RUN rm -r /root/dse-service-demo
+RUN rm -r /tmp/mavenRepository
+</code></pre>
+<p>Build command</p>
+<pre><code>docker build -t tegdsf/dse-demo --no-cache-true .
+</code></pre>
+<p>Start command</p>
+<pre><code>docker run -d -p 10.6.207.228:19800:19800 -e DSE_DOCKER_HOST=10.6.207.228 -e DSE_DOCKER_PORT=19800 tegdsf/dse-demo
+</code></pre>
+<p><strong>Build image for routercenter</strong></p>
+<pre><code>### tegdsf/dse在base centos镜像之上安装了jdk和DSE
+FROM tegdsf/dse
+### 通过svn获取软负载代码
+RUN svn checkout http://tc-svn.tencent.com/doss/doss_openapi_rep/openapi_proj/branches/commons/routercenter/1.1.1 /tmp/routercenter
+### 通过maven编译打包
+RUN cd /tmp/routercenter/routercenter-service; mvn compile
+### 将部署包拷贝到DSE的apps文件夹下
+RUN mkdir /root/dse-latest/apps/routercenter
+RUN mv /tmp/routercenter/routercenter-service/WEB-INF /root/dse-latest/apps/routercenter
+RUN rm -r /tmp/routercenter
+RUN rm -r /tmp/mavenRepository
+### 关闭Internal服务，包括心跳上报、指标收集
+ENV internal_enable false
+</code></pre>
+<p>Start command</p>
+<pre><code>docker run -d -P -e CONFIG_MODE=LOCAL  tegdsf/routercenter
+</code></pre>
+<p><strong>Build Python HTTP File Server</strong></p>
+<pre><code>FROM centos
+VOLUMN /root/files
+WORKDIR /root/files
+EXPOSE 8080
+ENTRYPOINT python -m SimpleHTTPServer 8080
+</code></pre>
+
+            </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../2014-11-01-kubernetes-dsf-demo" class="btn btn-neutral float-right" title="2014 11 01 kubernetes dsf demo"/>Next <span class="icon icon-circle-arrow-right"></span></a>
+      
+      
+        <a href=".." class="btn btn-neutral" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+    <!-- Copyright etc -->
+    </p>
+  </div>
+
+  Built with <a href="http://www.mkdocs.org">MkDocs</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+	  
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+<div class="rst-versions" role="note" style="cursor: pointer">
+    <span class="rst-current-version" data-toggle="rst-current-version">
+        
+      <span><a href=".." style="color: #fcfcfc;">&laquo; Previous</a></span>
+      <span style="margin-left: 15px"><a href="../2014-11-01-kubernetes-dsf-demo" style="color: #fcfcfc">Next &raquo;</a></span>
+    </span>
+</div>
+</body>
+</html>
