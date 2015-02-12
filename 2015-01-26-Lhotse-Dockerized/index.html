@@ -121,7 +121,7 @@
             <div class="section">
               <h1 id="docker-lhotse">全民拥抱Docker云--Lhotse系统经验分享</h1>
 <h3 id="_1">前言</h3>
-<p>“只要站在风口，猪也能飞起来”，这碗心灵鸡汤不知道激励了多少英雄豪杰踏上寻风口之路。而现如今，Docker这阵龙卷风呼啸来袭，更让众人生起迎风而上、直冲云霄的欲望。为了找到这风口，数据平台部开始全面拥抱Docker，基于多年的大数据集群管理经验，倾力打造DockerOnGaia云平台（简称<a href="http://km.oa.com/group/docker/articles/show/207094">Gaia云</a>），并动员将数平自身的核心系统<a href="http://km.oa.com/group/2430/articles/show/165306">Lhotse</a>、<a href="http://km.oa.com/group/597/articles/show/191455">Hermes</a>、<a href="http://km.oa.com/group/2430/articles/show/163736">Hive</a>、<a href="http://km.oa.com/group/3292/articles/show/175686">TRE</a>、<a href="http://km.oa.com/group/3292/articles/show/176743">TDBank</a>等全面接入Gaia云。</p>
+<p>“只要站在风口，猪也能飞起来”，这碗心灵鸡汤不知道激励了多少英雄豪杰踏上寻风口之路。而现如今，Docker这阵龙卷风呼啸来袭，更让众人生起迎风而上、直冲云霄的欲望。为了找到这风口，数据平台部开始全面拥抱Docker，基于多年的大数据集群管理经验，倾力打造DockerOnGaia云平台（简称<a href="http://km.oa.com/group/docker/articles/show/207094">Gaia云</a>），并动员将数平自身的核心系统<a href="http://km.oa.com/group/2430/articles/show/165306">Lhotse</a>、<a href="http://km.oa.com/group/597/articles/show/191455">Hermes</a>、<a href="http://km.oa.com/group/2430/articles/show/163736">Hive</a>、<a href="http://km.oa.com/group/17516/articles/show/215237">TRE</a>、<a href="http://km.oa.com/group/3292/articles/show/176743">TDBank</a>等全面接入Gaia云。</p>
 <p>Lhotse系统作为先锋部队，经过一段时间的改造-验证-灰度，目前现网已经完全接入、稳定运营。本文旨在分享Lhotse接入Gaia云的一些实践经验，抛砖引玉，期待更多的系统加入队伍，一起在Docker云中探索前行。</p>
 <h3 id="_2">背景介绍</h3>
 <p>Lhotse是一个大数据任务调度系统，从架构上看是典型的Master-Agent分布式架构，如下图所示，作为调度核心的Base统筹分配任务，交由对应类型的Runner执行：</p>
